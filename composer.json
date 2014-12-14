@@ -1,5 +1,5 @@
 {
-	"name": "planktonfun/ZELayout",
+	"name": "planktonfun/zf2elayout",
     "description": "ZF2 Electronic view in HTML 5",
     "require": {
         "php": ">=5.3.0"
