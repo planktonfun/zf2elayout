@@ -1,0 +1,13 @@
+<html lang="en-US">
+	<head>	
+		<?php
+			
+			$basePath = $this->basePath();
+
+			echo $this->headTitle('Electronic Map')->setSeparator(' | ');
+			echo $this->headLink(array('rel' => 'canonical', 'href' => $basePath ))
+					  ->prependStylesheet($basePath . '/emap/assets/style.css');
+
+		?>
+	</head>
+<body>

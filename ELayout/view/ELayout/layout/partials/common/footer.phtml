@@ -1,0 +1,10 @@
+<?php
+	$basePath = $this->basePath();
+
+	echo $this->inlineScript()->setAllowArbitraryAttributes(true)
+              ->appendFile( $basePath . '/emap/assets/jquery.min.js', 'text/javascript')
+              ->appendFile( $basePath . '/emap/assets/model.js', 'text/javascript')
+              ->appendFile( $basePath . '/emap/assets/controller.js', 'text/javascript');
+?>
+</body>
+</html>

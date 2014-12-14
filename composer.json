@@ -1,0 +1,7 @@
+{
+	"name": "planktonfun/ZELayout",
+    "description": "ZF2 Electronic view in HTML 5",
+    "require": {
+        "php": ">=5.3.0"
+    }
+}

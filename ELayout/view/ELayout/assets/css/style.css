@@ -1,0 +1,10 @@
+body {
+	margin: 0;
+}
+
+#electronic_map {
+	padding: 5px;
+	border: 1px solid lightgreen;
+	background: url(../assets/hexgrid.png) top left;
+	cursor: pointer;
+}
