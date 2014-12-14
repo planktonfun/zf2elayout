@@ -12,7 +12,9 @@ Installation:
     >vendor/bin/zf.php generate class_map
   
   - Install this module to your vendor folder via command line:	
-    >php composer.phar require zendframework/zend-developer-tools:dev-master
+    >php composer.phar require planktonfun/zf2elayout:dev-master
+  	>cp -r vendor/planktonfun/zf2elayout/ELayout module/ELayout
+  	>rm -r vendor/planktonfun
 
   - Add "ELayout" Module to your application.config.php
   - Browse the module through "/emap"
