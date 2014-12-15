@@ -112,9 +112,9 @@
 			for (var category in categories ) {
 
 				var count = categories[ category ];
-				var rows = Math.ceil( count / columns ); console.log( rows );
-				var width = ( images['microchip'].width * limVar( count, 1, 5 ) ) + (padding * 2);
-				var height = ( images['microchip'].height * rows ) + (padding * 2);
+				var rows = Math.ceil( count / columns );
+				var width = ( images['microchip'].width * ( limVar( count, 1, 5 ) ) ) + (padding * 2) + ( 5 * limVar( count, 1, 5 ) );
+				var height = ( images['microchip'].height * rows ) + (padding * 2) + ( 5 * rows );
 
 				categoriesObj.push({
 					x: x,
@@ -167,7 +167,7 @@
 				});
 
 				if( typeof( categories[ category ] )==='undefined' )
-					categories[ category ] = 0;
+					categories[ category ] = 1;
 				else
 					categories[ category ] += 1;
 
