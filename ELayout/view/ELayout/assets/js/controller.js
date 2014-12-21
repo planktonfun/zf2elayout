@@ -57,7 +57,12 @@
 			renderCategoriesAndChips();
 			renderChips();
 			renderText();
+			renderWires();
+			
+		}
 
+		function renderWires() {
+			
 		}
 
 		function renderCategoriesAndChips( ) {

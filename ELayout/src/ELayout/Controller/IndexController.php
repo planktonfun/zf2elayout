@@ -4,6 +4,7 @@ namespace ELayout\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\Loader\ModuleAutoloader;
 
 class IndexController extends AbstractActionController
 {
@@ -14,6 +15,7 @@ class IndexController extends AbstractActionController
             $module_list = $this->_getAllModules( );
 
             $view->setVariable('module_list', json_encode( $module_list ) );
+            $view->setVariable('linked_list', json_encode( $this->linked_list ) );
             $view->setTemplate('ELayout/ELayout/index');            
             $this->layout('layout/el_layout');
             
@@ -36,13 +38,15 @@ class IndexController extends AbstractActionController
 
     private function _getAllModules( )
     {
-        $manager = $this->getServiceLocator()->get('ModuleManager');
-        $modules = include __DIR__ . ' /../../../../../autoload_classmap.php';
-        $basepath = dirname( dirname( dirname( dirname( dirname( __DIR__ ) ) ) ) );
+        $config = include "config/application.config.php";
+        $service = $this->getServiceLocator()->get('module_locator_service');
+        $sample_req = $this->getServiceLocator()->get('preg_album_controller');
 
-        foreach( $modules as $index => $filename )
-            if( strpos( $filename, "Module.php" ) > 0 )
-                $loaded_modules[ ] = str_replace( array( $basepath, "/Module.php"), "", $filename);
+        $this->linked_list = $service->setPaths( $config["module_listener_options"]["module_paths"] )
+                                     ->setModules( $config["modules"] )
+                                     ->locate();
+
+        $loaded_modules = $service->getModulesPath( );
 
         asort( $loaded_modules );
 
