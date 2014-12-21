@@ -2,6 +2,7 @@
 		// Set All required variables
 		var images = [];
 		var chips = [];
+		var wires = [];
 		var categories = [];
 		var categoriesObj = [];
 		var canvas = document.getElementById("electronic_map");
@@ -14,6 +15,7 @@
 				console.log( 'all loaded' );
 				
 				createChips( );
+				createWires( );
 				
 				setInterval( gameloop, 1000/60 );
 			
@@ -61,8 +63,61 @@
 			
 		}
 
-		function renderWires() {
+		function createWires() {
+			$.each( linked_list_json, function( module, links ) {
+				$.each( links, function( index, value ) {
+					if( module != value ) {
+						wires.push({
+							x1: 0, y1: 0,
+							x2: 0, y2: 0,
+							w: 1,
+							h: 1,
+							color: 'gold',
+							to: value,
+							from: module
+						});
+					}
+				});
+			});
+		}
+
+		function transformWires() {
+
+			$.each( wires, function(){
+				
+				var chip_from = getChipName( this.from );
+
+				this.x1 = chip_from.x;
+				this.y1 = chip_from.y;
+
+				var chip_to = getChipName( this.to );
+
+				this.x2 = chip_to.x;
+				this.y2 = chip_to.y;
+
+			});
+		}
+
+		function getChipName( name ) {
+
+			var finding = false;
+
+			$.each( chips, function() {
+				if( this.text == name ) {
+					finding = this;
+				}
 			
+			});
+
+			return finding;
+		}
+
+		function renderWires() {
+			transformWires( );
+
+			$.each( wires, function(){
+				// Draw here
+			});
 		}
 
 		function renderCategoriesAndChips( ) {
