@@ -88,6 +88,7 @@ class ModuleLocatorService
 			    switch( basename( $file ) )
 			    {
 			    	case 'service.config.php':
+			    	case 'services.config.php':
 			    		$this->getInvokables( $file );
 			    	break;
 
@@ -117,7 +118,9 @@ class ModuleLocatorService
 
 		preg_match_all("/([$]this->getServiceLocator[(][)]->get[(][\"'])([A-Za-z0-9_ \-]*)([\"'][)])/", $contents, $output_array);
 
-		foreach( $output_array[2] as $service ) $this->services_used[ $this->current_module ][ $service ] = $service;
+		if( isset( $output_array[2] ) && count( $output_array[2] ) > 0 )
+			foreach( $output_array[2] as $service ) 
+				$this->services_used[ $this->current_module ][ $service ] = $service;
 
 		preg_match_all("/namespace ([A-Za-z0-9_\-]*);/", $contents, $output_array);
 
@@ -145,6 +148,8 @@ class ModuleLocatorService
 	private function getInvokables( $filepath )
 	{
 		$list = include $filepath;
+
+		if( !isset( $list['invokables'] ) || empty( array_filter( $list['invokables'] ) ) ) return;
 
 		if( !isset( $this->services_contained[ $this->current_module ] ) ) 
 			$this->services_contained[ $this->current_module ] = $list['invokables'];

@@ -75,7 +75,7 @@
 							x2: 0, y2: 0,
 							w: 1,
 							h: 1,
-							color: 'black',
+							color: 'gold',
 							to: value,
 							from: module
 						});

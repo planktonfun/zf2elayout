@@ -122,7 +122,10 @@
 			if(typeof(color)==='undefined') color = "White";	
 			if(typeof(opacity)==='undefined') opacity = 1;	
 
+			context.save();
+
 			opacity = limVar(opacity, 0, 1);
+			
 			context.globalAlpha = opacity;
 			context.font = size + "px Gloria Hallelujah";
 			context.fillStyle = color;
@@ -131,10 +134,9 @@
 			context.lineWidth = 7;
 			context.strokeText(text, x, y);
 			context.lineWidth = 1;
-			
-			context.fillText(text, x, y);
-
+			context.fillText(text, x, y);      
 			context.globalAlpha = 1;
+			context.restore();
 		}
 
 		function drawLine( fx, fy, tx, ty, w, h, color ) {
@@ -155,8 +157,10 @@
 
 			if(typeof(color)==='undefined') color = "rgba(40,206,199,0.8)";
 
+			context.save();
 			context.fillStyle = color;
 			context.fillRect(x,y,w,h);
+			context.restore();
 		}
 
 		function drawBorder( x, y, w, h, color ) {
