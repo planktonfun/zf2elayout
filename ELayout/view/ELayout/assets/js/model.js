@@ -8,6 +8,55 @@
 	    	return hit;
 		}
 
+		function lineIntersect(l1, l2) {
+
+		    var x=((l1.x1*l1.y2-l1.y1*l1.x2)*(l2.x1-l2.x2)-(l1.x1-l1.x2)*(l2.x1*l2.y2-l2.y2*l2.x2))/((l1.x1-l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1-l2.x2));
+		    var y=((l1.x1*l1.y2-l1.y1*l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1*l2.y2-l2.y2*l2.x2))/((l1.x1-l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1-l2.x2));
+		    
+		    if (isNaN(x)||isNaN(y)) {
+		        return false;
+		    } else {
+		        if (l1.x1>=l1.x2) {
+		            if (!(l1.x2<=x&&x<=l1.x1)) {
+		            	return false;
+		            }
+		        } else {
+		            if (!(l1.x1<=x&&x<=l1.x2)) {
+		            	return false;
+		            }
+		        }
+		        if (l1.y1>=l1.y2) {
+		            if (!(l1.y2<=y&&y<=l1.y1)) {
+		            	return false;
+		            }
+		        } else {
+		            if (!(l1.y1<=y&&y<=l1.y2)) {
+		            	return false;
+		            }
+		        }
+		        if (l2.x1>=l2.x2) {
+		            if (!(l2.x2<=x&&x<=l2.x1)) {
+		            	return false;
+		            }
+		        } else {
+		            if (!(l2.x1<=x&&x<=l2.x2)) {
+		            	return false;
+		            }
+		        }
+		        if (l2.y2>=l2.y2) {
+		            if (!(l2.y2<=y&&y<=l2.y2)) {
+		            	return false;
+		            }
+		        } else {
+		            if (!(l2.y2<=y&&y<=l2.y2)) {
+		            	return false;
+		            }
+		        }
+		    }
+
+		    return true;
+		}
+
 		function limVar( num, min, max ) {
 			return Math.min( Math.max( parseFloat( num ), min ), max );
 		}
@@ -88,9 +137,25 @@
 			context.globalAlpha = 1;
 		}
 
-		function drawRect( x, y, w, h, id ) {
+		function drawLine( fx, fy, tx, ty, w, h, color ) {
 
-			context.fillStyle = 'rgba(40,206,199,0.8)';
+			if(typeof(color)==='undefined') color = "rgba(40,206,199,0.8)";
+			
+			context.save();
+			context.strokeStyle = color;
+			context.beginPath();
+			context.moveTo(fx,fy);
+			context.lineTo(tx,ty);
+			context.stroke();
+			context.restore();
+
+		}
+
+		function drawRect( x, y, w, h, color ) {
+
+			if(typeof(color)==='undefined') color = "rgba(40,206,199,0.8)";
+
+			context.fillStyle = color;
 			context.fillRect(x,y,w,h);
 		}
 

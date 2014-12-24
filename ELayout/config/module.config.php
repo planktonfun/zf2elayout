@@ -10,7 +10,7 @@ return array(
             'e-map' => array(
                 'type'        => 'segment',
                 'options'    => array(
-                    'route'        => '/emap[/]',
+                    'route'        => '/emap',
                     'defaults'    => array(
                         'controller'    => 'ELayout\Controller\Index',
                         'action'        => 'index',
