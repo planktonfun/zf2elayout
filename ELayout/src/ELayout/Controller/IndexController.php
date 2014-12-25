@@ -18,7 +18,7 @@ class IndexController extends AbstractActionController
             $view->setVariable('linked_list', json_encode( $this->linked_list ) );
             $view->setTemplate('ELayout/ELayout/index');            
             $this->layout('layout/el_layout');
-            
+        
             return $view;
     }
 
@@ -38,19 +38,52 @@ class IndexController extends AbstractActionController
 
     private function _getAllModules( )
     {
-        $config = include "config/application.config.php";
-        $service = $this->getServiceLocator()->get('module_locator_service');
-        // $sample_req = $this->getServiceLocator()->get('preg_album_controller');
+        if( $loaded_modules = $this->_getCache( 'loaded_modules' ) ) {
 
-        $this->linked_list = $service->setPaths( $config["module_listener_options"]["module_paths"] )
-                                     ->setModules( $config["modules"] )
-                                     ->locate();
+            $this->linked_list = $this->_getCache( 'linked_list' );
 
-        $loaded_modules = $service->getModulesPath( );
+            return $loaded_modules;
 
-        asort( $loaded_modules );
+        } else {
 
+            $config = include "config/application.config.php";
+            $service = $this->getServiceLocator()->get('module_locator_service');
+            // $sample_req = $this->getServiceLocator()->get('preg_album_controller');
+
+            $this->linked_list = $service->setPaths( $config["module_listener_options"]["module_paths"] )
+                                         ->setModules( $config["modules"] )
+                                         ->locate();
+            
+            $this->_setCache( 'linked_list', $this->linked_list );
+
+            $loaded_modules = $service->getModulesPath( );
+            
+            $this->_setCache( 'loaded_modules', $loaded_modules );
+
+            asort( $loaded_modules );
+
+        }
+      
         return $loaded_modules;
+    }
+
+    private function _getCache( $name )
+    {
+        $binary = json_decode( file_get_contents('data/cache.log'), true );
+
+        if( isset( $binary[ $name ] ) ) {
+            return $binary[ $name ];
+        } else {
+            return false;
+        }
+    }
+
+    private function _setCache( $name, $data )
+    {
+        $binary = json_decode( file_get_contents('data/cache.log'), true );
+        $binary[ $name ] = $data;
+
+        file_put_contents('data/cache.log', json_encode( $binary ) );
     }
 
     private function _setViewBasedOnFileName( $file_name, $view ) 
