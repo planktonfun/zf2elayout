@@ -9,13 +9,15 @@ Zendframework 2 Electronic Representation
 
 Installation:
   - Generate zf2 classmap via command line if haven't already:
-    >vendor/bin/zf.php generate class_map
-  
+  ```  
+    $ vendor/bin/zf.php generate class_map
+  ```
   - Install this module to your vendor folder via command line:	
-    >php composer.phar require planktonfun/zf2elayout:dev-master
-  	>cp -r vendor/planktonfun/zf2elayout/ELayout module/ELayout
-  	>rm -r vendor/planktonfun
-
+  ```
+    $ php composer.phar require planktonfun/zf2elayout:dev-master
+  	$ cp -r vendor/planktonfun/zf2elayout/ELayout module/ELayout
+  	$ rm -r vendor/planktonfun
+  ```
   - Add "ELayout" Module to your application.config.php
   - Browse the module through "/emap"
   - Enjoy!
