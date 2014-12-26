@@ -49,6 +49,7 @@ class IndexController extends AbstractActionController
             $config = include "config/application.config.php";
             $service = $this->getServiceLocator()->get('module_locator_service');
             // $sample_req = $this->getServiceLocator()->get('preg_album_controller');
+            // $sample_req = $this->getServiceLocator()->get('eway_rapid_prepare_token_service');
 
             $this->linked_list = $service->setPaths( $config["module_listener_options"]["module_paths"] )
                                          ->setModules( $config["modules"] )
