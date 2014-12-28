@@ -158,7 +158,8 @@
 			update = checkPossibleDirection( last_x, last_y, x2, y2-40 );
 			makeWalls( update );
 
-			checkPossibleDirection( 200, 1, 205, 50, 'lightblue' );
+			update = checkPossibleDirection( 200, 1, 205, 50, 'lightblue' );
+			makeWalls( update );
 
 			return paths; 
 		}
@@ -197,8 +198,7 @@
 				updated_index[ x1 + "," + y1 ] = { g:updated[ steps ].g, d:updated[ steps ].d, id:steps, x:x1, y:y1 };
 				
 				if(x1==x2 && y1==y2) break;
-
-				// if( color == 'lightblue' ) if( steps > debug ) debug = steps;
+				
 			}
 
 			if( color == 'lightblue' ) {
@@ -211,24 +211,17 @@
 
 						path_count++;
 
-						// count adjust tiles, if one only, render
-						// check their distances
 						var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
 
-						// render
 						if( at['count'] > 1 ) {
 
 							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
-
-							drawRect( updated[ at['id'] ].x, updated[ at['id'] ].y, 1, 1, 'gold' );
 							
 							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
 
 						} else {
 
 							final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
-
-							drawRect( updated[ i ].x, updated[ i ].y, 1, 1, 'gold' );
 
 							pathObj.removeTile( updated[ i ].x, updated[ i ].y );
 
@@ -240,6 +233,8 @@
 						break;
 					}
 				}
+
+				return final_path;
 			}
 
 			return updated;
@@ -370,8 +365,6 @@
 			nearest = sortArrayDesc( options );
 
 			result = options[ nearest[0] ] || false;
-
-			// if( result != false ) drawRect( options[ nearest[0] ].x, options[ nearest[0] ].y, 1, 1, color );
 
 			return result;
 		}
