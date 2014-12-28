@@ -158,9 +158,6 @@
 			update = checkPossibleDirection( last_x, last_y, x2, y2-40 );
 			makeWalls( update );
 
-			update = checkPossibleDirection( 200, 1, 205, 50, 'lightblue' );
-			makeWalls( update );
-
 			return paths; 
 		}
 
@@ -198,46 +195,41 @@
 				updated_index[ x1 + "," + y1 ] = { g:updated[ steps ].g, d:updated[ steps ].d, id:steps, x:x1, y:y1 };
 				
 				if(x1==x2 && y1==y2) break;
-				
+
 			}
 
-			if( color == 'lightblue' ) {
+			var path_count = 0;
 
-				var path_count = 0;
+			for( var i = steps; i > 0; i--)
+			{
+				if( pathObj.isTile( updated[ i ].x, updated[ i ].y ) ) {
 
-				for( var i = steps; i > 0; i--)
-				{
-					if( pathObj.isTile( updated[ i ].x, updated[ i ].y ) ) {
+					path_count++;
 
-						path_count++;
+					var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
 
-						var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
+					if( at['count'] > 1 ) {
 
-						if( at['count'] > 1 ) {
+						final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+						
+						pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
 
-							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
-							
-							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+					} else {
 
-						} else {
+						final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
 
-							final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
-
-							pathObj.removeTile( updated[ i ].x, updated[ i ].y );
-
-						}
+						pathObj.removeTile( updated[ i ].x, updated[ i ].y );
 
 					}
 
-					if(updated[ i ].x==start_x && updated[ i ].y==start_y) {
-						break;
-					}
 				}
 
-				return final_path;
+				if(updated[ i ].x==start_x && updated[ i ].y==start_y) {
+					break;
+				}
 			}
 
-			return updated;
+			return final_path;
 		}
 
 		function countAdjacentTiles( x, y, updated_index ) {
