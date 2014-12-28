@@ -3,12 +3,12 @@
 		var images = [];
 		var chips = [];
 		var wires = [];
-		var pathsdrawn = [];
 		var categories = [];
 		var categoriesObj = [];		
 		var canvas = document.getElementById("electronic_map");
 		var context = canvas.getContext("2d");
 		var stop = false;
+		var debug = false;
 
 		// Initializer
 		$(function(){

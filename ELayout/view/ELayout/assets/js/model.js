@@ -8,55 +8,6 @@
 	    	return hit;
 		}
 
-		function lineIntersect(l1, l2) {
-
-		    var x=((l1.x1*l1.y2-l1.y1*l1.x2)*(l2.x1-l2.x2)-(l1.x1-l1.x2)*(l2.x1*l2.y2-l2.y2*l2.x2))/((l1.x1-l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1-l2.x2));
-		    var y=((l1.x1*l1.y2-l1.y1*l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1*l2.y2-l2.y2*l2.x2))/((l1.x1-l1.x2)*(l2.y2-l2.y2)-(l1.y1-l1.y2)*(l2.x1-l2.x2));
-		    
-		    if (isNaN(x)||isNaN(y)) {
-		        return false;
-		    } else {
-		        if (l1.x1>=l1.x2) {
-		            if (!(l1.x2<=x&&x<=l1.x1)) {
-		            	return false;
-		            }
-		        } else {
-		            if (!(l1.x1<=x&&x<=l1.x2)) {
-		            	return false;
-		            }
-		        }
-		        if (l1.y1>=l1.y2) {
-		            if (!(l1.y2<=y&&y<=l1.y1)) {
-		            	return false;
-		            }
-		        } else {
-		            if (!(l1.y1<=y&&y<=l1.y2)) {
-		            	return false;
-		            }
-		        }
-		        if (l2.x1>=l2.x2) {
-		            if (!(l2.x2<=x&&x<=l2.x1)) {
-		            	return false;
-		            }
-		        } else {
-		            if (!(l2.x1<=x&&x<=l2.x2)) {
-		            	return false;
-		            }
-		        }
-		        if (l2.y2>=l2.y2) {
-		            if (!(l2.y2<=y&&y<=l2.y2)) {
-		            	return false;
-		            }
-		        } else {
-		            if (!(l2.y2<=y&&y<=l2.y2)) {
-		            	return false;
-		            }
-		        }
-		    }
-
-		    return true;
-		}
-
 		function limVar( num, min, max ) {
 			return Math.min( Math.max( parseFloat( num ), min ), max );
 		}
@@ -228,4 +179,18 @@
 				y += 12;
 				displayCascadingText( text.substr( length, ( text.length - length ) ), length, x, y, text_size, color );
 			}
+		}
+
+		function getDistance( point1, point2 )
+		{
+			var xs = 0;
+			var ys = 0;
+
+			xs = point2.x - point1.x;
+			xs = xs * xs;
+
+			ys = point2.y - point1.y;
+			ys = ys * ys;
+
+			return Math.sqrt( xs + ys );
 		}
