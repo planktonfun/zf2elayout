@@ -19,6 +19,7 @@
 			},
 			reset: function () {
 				this.tiles = [];
+				this.invistiles = [];
 			}
 		};
 
@@ -34,7 +35,7 @@
 							x2: 0, y2: 0,
 							w: 1,
 							h: 1,
-							color: 'black',
+							color: 'gold',
 							to: value,
 							from: module
 						});
@@ -115,7 +116,7 @@
 
 			});
 
-			renderWalls( 'grey' );
+			renderWalls( 'gold' );
 
 			walls = [];
 		}
@@ -123,7 +124,10 @@
 		function renderWalls( color ) {
 			for( var x in walls ) {
 				for( var y in walls[x]) {
-					drawRect( x, y, 1, 1, color );
+					if( walls[x][y] == 1 )
+						drawRect( x, y, 1, 1, color );
+					// if( walls[x][y] == 2 )
+					// 	drawRect( x, y, 1, 1, 'green' );
 				}
 			}
 		}
@@ -158,14 +162,74 @@
 			update = checkPossibleDirection( last_x, last_y, x2, y2-40 );
 			makeWalls( update );
 
+			// update = checkPossibleDirection( 119, -20, 119, 30, 'lightblue' );
+			// makeWalls( update );
+
+			// update = checkPossibleDirection( 300, -20, 300, 30, 'lightblue' );
+			// makeWalls( update );
+
 			return paths; 
 		}
 
 		function makeWalls( points ) {
+
+			var inviswall = [];
+			var path = 0;
+
 			$.each( points, function(){
+
 				walls[this.x] = walls[this.x] || [];
 				walls[this.x][this.y] = 1;
+
+				inviswall[ path ] = { x: this.x, y: this.y };
+
+				path++;
+
 			});
+
+			var path = 0;
+			var lx = 0;
+			var ly = 0;
+			var x = 0;
+			var y = 0;
+			var px = 0;
+			var py = 0;
+
+			for( var i in inviswall )
+			{
+				if( path >= 1 ) {
+					lx = inviswall[ i - 1 ].x; x = inviswall[ i ].x;
+					ly = inviswall[ i - 1 ].y; y = inviswall[ i ].y;
+					
+					px = x + 1; py = y;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x - 1; py = y;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x; py = y + 1;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x; py = y - 1;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+				}
+
+				path++;
+			}
+
 		}
 
 		function checkPossibleDirection( x1, y1, x2, y2, color ) {
@@ -193,12 +257,15 @@
 				y1 = updated[ steps ].y;
 
 				updated_index[ x1 + "," + y1 ] = { g:updated[ steps ].g, d:updated[ steps ].d, id:steps, x:x1, y:y1 };
-				
+
 				if(x1==x2 && y1==y2) break;
 
 			}
 
 			var path_count = 0;
+			var switched = false;
+			var switchObj = { x: false, y: false };
+			var limit = 5;
 
 			for( var i = steps; i > 0; i--)
 			{
@@ -206,25 +273,55 @@
 
 					path_count++;
 
-					var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
-
-					if( at['count'] > 1 ) {
-
-						final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+					if( !switched ) {
 						
-						pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+						var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
+
+						if( at['count'] > 1 ) {
+
+							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+							
+							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+
+							switched = true;
+							switchObj.x = final_path[ path_count ].x; 
+							switchObj.y = final_path[ path_count ].y; 
+
+						} else {
+
+							final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
+	                        
+							pathObj.removeTile( updated[ i ].x, updated[ i ].y );
+
+						}
 
 					} else {
 
-						final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
+						var at = countAdjacentTiles( switchObj.x, switchObj.y, updated_index );
 
-						pathObj.removeTile( updated[ i ].x, updated[ i ].y );
+						if( at['id'] != 0 ) {
 
+							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+								
+							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+
+							switchObj.x = final_path[ path_count ].x;
+							switchObj.y = final_path[ path_count ].y;
+
+						} else {
+							limit = 0;
+						}
 					}
+					
+					if( limit == 0 ) break;
+					else if( color == 'lightblue' ) drawRect( final_path[ path_count ].x, final_path[ path_count ].y, 1, 1, 'black' );
 
 				}
 
 				if(updated[ i ].x==start_x && updated[ i ].y==start_y) {
+					
+					pathObj.removeTile( updated[ i ].x, updated[ i ].y );
+
 					break;
 				}
 			}
@@ -232,8 +329,9 @@
 			return final_path;
 		}
 
-		function countAdjacentTiles( x, y, updated_index ) {
+		function countAdjacentTiles( x, y, updated_index, diagonal ) {
 			
+			var diagonal = diagonal || false;
 			var count = 0;
 			var list = [];
 			var result = [];
@@ -243,14 +341,16 @@
 				list.push( updated_index[(x+1) + "," + y] );
 			}
 
-			if( pathObj.isTile(x+1, y+1) ){ 
-				count++;
-				list.push(updated_index[(x+1) + "," + (y+1)]);
-			}
+			if( diagonal ) {
+				if( pathObj.isTile(x+1, y+1) ){ 
+					count++;
+					list.push(updated_index[(x+1) + "," + (y+1)]);
+				}
 
-			if( pathObj.isTile(x+1, y-1) ){ 
-				count++;
-				list.push(updated_index[(x+1) + "," + (y-1)]);
+				if( pathObj.isTile(x+1, y-1) ){ 
+					count++;
+					list.push(updated_index[(x+1) + "," + (y-1)]);
+				}
 			}
 
 			if( pathObj.isTile(x-1, y ) ){ 
@@ -258,14 +358,16 @@
 				list.push(updated_index[(x-1) + "," +  y ]);
 			}
 
-			if( pathObj.isTile(x-1, y+1) ){ 
-				count++;
-				list.push(updated_index[(x-1) + "," +  (y+1)]);
-			}
+			if( diagonal ) {
+				if( pathObj.isTile(x-1, y+1) ){ 
+					count++;
+					list.push(updated_index[(x-1) + "," +  (y+1)]);
+				}
 
-			if( pathObj.isTile(x-1, y-1) ){ 
-				count++;
-				list.push(updated_index[(x-1) + "," +  (y-1)]);
+				if( pathObj.isTile(x-1, y-1) ){ 
+					count++;
+					list.push(updated_index[(x-1) + "," +  (y-1)]);
+				}
 			}
 
 			if( pathObj.isTile(x, y+1) ){ 
@@ -282,12 +384,12 @@
 			var id = 0;
 
 			$.each( list, function( index, value ) {
-				this.d = this.d || false;
+				this.g = this.g || false;
 
-				if( this.d ) {
-					if( initial == 0 ) initial = this.d;
-					if( initial >= this.d ) {
-						initial = this.d;
+				if( this.g ) {
+					if( initial == 0 ) initial = this.g;
+					if( initial >= this.g ) {
+						initial = this.g;
 						id = this.id;
 					}
 				}
@@ -408,7 +510,7 @@
 		
 			if( walls[x] !== undefined ) {
 				if( walls[x][y] !== undefined ) {
-					if( walls[x][y] == 1 ) {
+					if( walls[x][y] == 1 || walls[x][y] == 2 ) {
 						return true;
 					}				
 				}
@@ -432,6 +534,8 @@
 
 			var start = 0;
 			var end = 0;
+			var inviswall = [];
+			var path = 0;
 
 			if( x1 == x2 ) {
 
@@ -445,8 +549,12 @@
 
 				for( var i=start; end>i; i++)
 				{
+					inviswall[ path ] = { x: x1, y: i };
+
 					walls[x1] = walls[x1] || [];
 					walls[x1][i] = 1;
+
+					path++;
 				}
 
 			} else if( y1 == y2 )  {
@@ -461,8 +569,12 @@
 
 				for( var i=start; end>i; i++)
 				{
+					inviswall[ path ] = { x: i, y: y1 };
+
 					walls[i] = walls[i] || [];
 					walls[i][y1] = 1;
+
+					path++;
 				}
 			
 			} else {
@@ -470,6 +582,48 @@
 				console.log( 'Line not given' );
 
 				return false;
+			}
+				
+			var path = 0;
+			var lx = 0;
+			var ly = 0;
+			var x = 0;
+			var y = 0;
+			var px = 0;
+			var py = 0;
+
+			for( var i in inviswall )
+			{
+				if( path >= 1 ) {
+					lx = inviswall[ i - 1 ].x; x = inviswall[ i ].x;
+					ly = inviswall[ i - 1 ].y; y = inviswall[ i ].y;
+					
+					px = x + 1; py = y;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x - 1; py = y;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x; py = y + 1;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+
+					px = x; py = y - 1;
+					if( !isWall( px, py ) ) {
+						walls[px] = walls[px] || [];
+						walls[px][py] = 2;
+					}
+				}
+
+				path++;
 			}
 
 		}
