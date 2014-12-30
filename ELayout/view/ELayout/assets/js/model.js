@@ -194,3 +194,28 @@
 
 			return Math.sqrt( xs + ys );
 		}
+
+		function sortArrayDesc( options ) {
+				var min = [];
+
+				for( var index in options ) {
+					min.push( index );
+				};
+			    
+			    min.sort(function(a,b){return a-b;});
+				
+				return min;
+		}
+
+		function getDistance( point1, point2 ) {
+			var xs = 0;
+			var ys = 0;
+
+			xs = point2.x - point1.x;
+			xs = xs * xs;
+
+			ys = point2.y - point1.y;
+			ys = ys * ys;
+
+			return Math.sqrt( xs + ys );
+		}

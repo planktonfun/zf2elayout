@@ -1,6 +1,27 @@
 		
 		var pathObj = {
 			tiles: [],
+			walls: [],
+			steplimit: 8000,
+			isWall: function( x, y ) { 
+
+				if( this.walls[x+"-"+y] !== undefined )
+					if( this.walls[x+"-"+y].type == 1 || this.walls[x+"-"+y].type == 2 )
+						return true;
+				
+				if(this.isTile(x,y)) return true;
+
+				return false;
+			},
+			addWall: function( x, y, type ) {
+				var type = type || 1; 
+
+				this.walls[x+"-"+y] = { x:x, y:y, type: type };
+
+			},
+			resetWalls: function () {
+				this.walls = [];
+			},
 			isTile: function( x, y ) {
 		
 				if( this.tiles[x+"-"+y] !== undefined ) {
@@ -17,14 +38,267 @@
 			removeTile: function( x, y ) {
 				if(this.isTile) this.tiles[x+"-"+y] = 0;
 			},
-			reset: function () {
+			resetTiles: function () {
 				this.tiles = [];
-				this.invistiles = [];
+			},
+			checkPossibleDirection: function( x1, y1, x2, y2, color ) {
+
+				this.resetTiles();
+
+				var start_x = x1;
+				var start_y = y1;
+				var steps = 0;
+				var updated = [];
+				var updated_index = [];
+				
+				for( var i = this.steplimit; i > 0; i--) 
+				{
+					this.addTile( x1, y1 );
+					
+					steps++;
+
+					updated[ steps ] = this.step( x1, y1, x2, y2, start_x, start_y, color, false );
+
+					if( !updated[ steps ] ) return false;
+
+					x1 = updated[ steps ].x;
+					y1 = updated[ steps ].y;
+
+					updated_index[ x1 + "," + y1 ] = { g:updated[ steps ].g, d:updated[ steps ].d, id:steps, x:x1, y:y1 };
+
+					if(x1==x2 && y1==y2) break;
+
+				}
+
+				final_path = this.calculateFromPossibilities( start_x, start_y, steps, updated, updated_index, color );
+
+				return final_path;
+			},
+
+			calculateFromPossibilities: function( start_x, start_y, steps, updated, updated_index, color ) {
+				var path_count = 0;
+				var switched = false;
+				var switchObj = { x: false, y: false };
+				var limit = 5;
+				var final_path = [];
+
+				for( var i = steps; i > 0; i--)
+				{
+					if( this.isTile( updated[ i ].x, updated[ i ].y ) ) {
+
+						path_count++;
+
+						if( !switched ) {
+							
+							var at = this.countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
+
+							if( at['count'] > 1 ) {
+
+								final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+								
+								this.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+
+								switched = true;
+								switchObj.x = final_path[ path_count ].x; 
+								switchObj.y = final_path[ path_count ].y; 
+
+							} else {
+
+								final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
+		                        
+								this.removeTile( updated[ i ].x, updated[ i ].y );
+
+							}
+
+						} else {
+
+							var at = this.countAdjacentTiles( switchObj.x, switchObj.y, updated_index );
+
+							if( at['id'] != 0 ) {
+
+								final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
+									
+								this.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
+
+								switchObj.x = final_path[ path_count ].x;
+								switchObj.y = final_path[ path_count ].y;
+
+							} else {
+								limit = 0;
+							}
+						}
+						
+						if( limit == 0 ) break;
+						else if( color == 'lightblue' ) drawRect( final_path[ path_count ].x, final_path[ path_count ].y, 1, 1, 'black' );
+
+					}
+
+					if(updated[ i ].x==start_x && updated[ i ].y==start_y) {
+						
+						this.removeTile( updated[ i ].x, updated[ i ].y );
+
+						break;
+					}
+				}
+
+				return final_path;
+			},
+
+			countAdjacentTiles: function( x, y, updated_index, diagonal ) {
+				
+				var diagonal = diagonal || false;
+				var count = 0;
+				var list = [];
+				var result = [];
+
+				if( this.isTile(x+1, y) ){ 
+					count++;
+					list.push( updated_index[(x+1) + "," + y] );
+				}
+
+				if( diagonal ) {
+					if( this.isTile(x+1, y+1) ){ 
+						count++;
+						list.push(updated_index[(x+1) + "," + (y+1)]);
+					}
+
+					if( this.isTile(x+1, y-1) ){ 
+						count++;
+						list.push(updated_index[(x+1) + "," + (y-1)]);
+					}
+				}
+
+				if( this.isTile(x-1, y ) ){ 
+					count++;
+					list.push(updated_index[(x-1) + "," +  y ]);
+				}
+
+				if( diagonal ) {
+					if( this.isTile(x-1, y+1) ){ 
+						count++;
+						list.push(updated_index[(x-1) + "," +  (y+1)]);
+					}
+
+					if( this.isTile(x-1, y-1) ){ 
+						count++;
+						list.push(updated_index[(x-1) + "," +  (y-1)]);
+					}
+				}
+
+				if( this.isTile(x, y+1) ){ 
+					count++;
+					list.push(updated_index[x + "," +  (y+1)]);
+				}
+
+				if( this.isTile(x, y-1) ){ 
+					count++;
+					list.push(updated_index[x + "," +  (y-1)]);
+				}
+
+				result['id'] = this.getLowestCost( list );
+				result['count'] = count;
+
+				return result;
+			},
+			getLowestCost: function( list ) {
+
+				var initial = 0;
+				var id = 0;
+
+				$.each( list, function( index, value ) {
+					this.g = this.g || false;
+
+					if( this.g ) {
+						if( initial == 0 ) initial = this.g;
+						if( initial >= this.g ) {
+							initial = this.g;
+							id = this.id;
+						}
+					}
+				});
+
+				return id;
+			},
+			step: function( x1, y1, x2, y2, start_x, start_y, color, diagonals ) {
+
+				var diagonals = diagonals || false;
+				var color = color || 'violet';
+				var options = [];
+				var right = Infinity;
+				var left = Infinity;
+				var down = Infinity;
+				var up = Infinity;
+
+				var px = x1;
+				var py = y1;
+
+				px = x1 + 1;
+				
+				options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+				if( diagonals ) {
+					py = y1 + 1;
+					
+					options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+					py = y1 - 2;
+					
+					options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+				}
+
+				px = x1;
+				py = y1;
+
+				px = x1 - 1;
+				
+				options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+				if( diagonals ) {
+					py = y1 + 1;
+					
+					options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+					py = y1 - 2;
+					
+					options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+				}
+
+				px = x1;
+				py = y1;
+				
+				py = y1 + 1;
+				
+				options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+				py = y1 - 1;
+				
+				options = this.checkStep( options, px, py, x2, y2, start_x, start_y );
+
+				nearest = sortArrayDesc( options );
+
+				result = options[ nearest[0] ] || false;
+
+				return result;
+			},
+			checkStep: function( options, px, py, x2, y2, origin_x, origin_y ) {
+				if( !this.isWall( px, py ) ) {
+					to = getDistance( { x:px, y:py }, { x:x2, y:y2 });
+					from = getDistance( { x:px, y:py }, { x:origin_x, y:origin_y });
+					bestpath = to;
+
+					options[ bestpath ] = {
+						x: px, 
+						y: py,
+						d: to,
+						g: from,
+						f: bestpath
+					};
+
+				}
+
+				return options;
 			}
 		};
-
-		var walls = [];
-		var simulatedwalls = [];
 
 		function createWires() {
 			$.each( linked_list_json, function( module, links ) {
@@ -120,20 +394,16 @@
 
 			renderWalls( 'gold' );
 
-			walls = [];
+			pathObj.resetWalls();
 		}
 
 		function renderWalls( color ) {
-			for( var x in walls ) {
-				for( var y in walls[x]) {
-					if( walls[x][y] == 1 )
-						drawRect( x, y, 1, 1, color );
-					// if( walls[x][y] == 2 )
-					// 	drawRect( x, y, 1, 1, 'green' );
-				}
-			}
-		}
 
+			for( var i in pathObj.walls )
+				if( pathObj.walls[i].type == 1 ) 
+					drawRect( pathObj.walls[i].x, pathObj.walls[i].y, 1, 1, color );
+		
+		}
 		function renderPaths( paths, w, h, color ) {
 			$.each(paths, function() {
 
@@ -161,16 +431,8 @@
 			start_x = last_x;
 			start_y = last_y;			
 			
-			update = checkPossibleDirection( last_x, last_y, x2, y2-40 );
+			update = pathObj.checkPossibleDirection( last_x, last_y, x2, y2-40 );
 			makeWalls( update );
-
-			debug = x1 + " " + y1 + " " + x2 + " " + y2;
-
-			// update = checkPossibleDirection( 119, -20, 119, 30, 'lightblue' );
-			// makeWalls( update );
-
-			// update = checkPossibleDirection( 300, -20, 300, 30, 'lightblue' );
-			// makeWalls( update );
 
 			return paths; 
 		}
@@ -182,8 +444,7 @@
 
 			$.each( points, function(){
 
-				walls[this.x] = walls[this.x] || [];
-				walls[this.x][this.y] = 1;
+				pathObj.addWall( this.x, this.y );
 
 				inviswall[ path ] = { x: this.x, y: this.y };
 
@@ -206,323 +467,22 @@
 					ly = inviswall[ i - 1 ].y; y = inviswall[ i ].y;
 					
 					px = x + 1; py = y;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x - 1; py = y;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x; py = y + 1;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x; py = y - 1;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 				}
 
 				path++;
 			}
 
-		}
-
-		function checkPossibleDirection( x1, y1, x2, y2, color ) {
-
-			pathObj.reset();
-
-			var start_x = x1;
-			var start_y = y1;
-			var steps = 0;
-			var updated = [];
-			var final_path = [];
-			var updated_index = [];
-			
-			for( var i = 8000; i > 0; i--) 
-			{
-				pathObj.addTile( x1, y1 );
-				
-				steps++;
-
-				updated[ steps ] = step( x1, y1, x2, y2, start_x, start_y, color, false );
-
-				if( !updated[ steps ] ) return false;
-
-				x1 = updated[ steps ].x;
-				y1 = updated[ steps ].y;
-
-				updated_index[ x1 + "," + y1 ] = { g:updated[ steps ].g, d:updated[ steps ].d, id:steps, x:x1, y:y1 };
-
-				if(x1==x2 && y1==y2) break;
-
-			}
-
-			var path_count = 0;
-			var switched = false;
-			var switchObj = { x: false, y: false };
-			var limit = 5;
-
-			for( var i = steps; i > 0; i--)
-			{
-				if( pathObj.isTile( updated[ i ].x, updated[ i ].y ) ) {
-
-					path_count++;
-
-					if( !switched ) {
-						
-						var at = countAdjacentTiles( updated[ i ].x, updated[ i ].y, updated_index );
-
-						if( at['count'] > 1 ) {
-
-							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
-							
-							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
-
-							switched = true;
-							switchObj.x = final_path[ path_count ].x; 
-							switchObj.y = final_path[ path_count ].y; 
-
-						} else {
-
-							final_path[ path_count ] = { x: updated[ i ].x, y: updated[ i ].y };
-	                        
-							pathObj.removeTile( updated[ i ].x, updated[ i ].y );
-
-						}
-
-					} else {
-
-						var at = countAdjacentTiles( switchObj.x, switchObj.y, updated_index );
-
-						if( at['id'] != 0 ) {
-
-							final_path[ path_count ] = { x: updated[ at['id'] ].x,  y: updated[ at['id'] ].y };
-								
-							pathObj.removeTile( updated[ at['id'] ].x, updated[ at['id'] ].y );
-
-							switchObj.x = final_path[ path_count ].x;
-							switchObj.y = final_path[ path_count ].y;
-
-						} else {
-							limit = 0;
-						}
-					}
-					
-					if( limit == 0 ) break;
-					else if( color == 'lightblue' ) drawRect( final_path[ path_count ].x, final_path[ path_count ].y, 1, 1, 'black' );
-
-				}
-
-				if(updated[ i ].x==start_x && updated[ i ].y==start_y) {
-					
-					pathObj.removeTile( updated[ i ].x, updated[ i ].y );
-
-					break;
-				}
-			}
-
-			return final_path;
-		}
-
-		function countAdjacentTiles( x, y, updated_index, diagonal ) {
-			
-			var diagonal = diagonal || false;
-			var count = 0;
-			var list = [];
-			var result = [];
-
-			if( pathObj.isTile(x+1, y) ){ 
-				count++;
-				list.push( updated_index[(x+1) + "," + y] );
-			}
-
-			if( diagonal ) {
-				if( pathObj.isTile(x+1, y+1) ){ 
-					count++;
-					list.push(updated_index[(x+1) + "," + (y+1)]);
-				}
-
-				if( pathObj.isTile(x+1, y-1) ){ 
-					count++;
-					list.push(updated_index[(x+1) + "," + (y-1)]);
-				}
-			}
-
-			if( pathObj.isTile(x-1, y ) ){ 
-				count++;
-				list.push(updated_index[(x-1) + "," +  y ]);
-			}
-
-			if( diagonal ) {
-				if( pathObj.isTile(x-1, y+1) ){ 
-					count++;
-					list.push(updated_index[(x-1) + "," +  (y+1)]);
-				}
-
-				if( pathObj.isTile(x-1, y-1) ){ 
-					count++;
-					list.push(updated_index[(x-1) + "," +  (y-1)]);
-				}
-			}
-
-			if( pathObj.isTile(x, y+1) ){ 
-				count++;
-				list.push(updated_index[x + "," +  (y+1)]);
-			}
-
-			if( pathObj.isTile(x, y-1) ){ 
-				count++;
-				list.push(updated_index[x + "," +  (y-1)]);
-			}
-
-			var initial = 0;
-			var id = 0;
-
-			$.each( list, function( index, value ) {
-				this.g = this.g || false;
-
-				if( this.g ) {
-					if( initial == 0 ) initial = this.g;
-					if( initial >= this.g ) {
-						initial = this.g;
-						id = this.id;
-					}
-				}
-			});
-
-			result['id'] = id;
-			result['count'] = count;
-
-			return result;
-		}
-
-		function step( x1, y1, x2, y2, start_x, start_y, color, diagonals ) {
-
-			var diagonals = diagonals || false;
-			var color = color || 'violet';
-			var options = [];
-			var right = Infinity;
-			var left = Infinity;
-			var down = Infinity;
-			var up = Infinity;
-
-			var px = x1;
-			var py = y1;
-
-			px = x1 + 1;
-			
-			options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-			if( diagonals ) {
-				py = y1 + 1;
-				
-				options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-				py = y1 - 2;
-				
-				options = checkStep( options, px, py, x2, y2, start_x, start_y );
-			}
-
-			px = x1;
-			py = y1;
-
-			px = x1 - 1;
-			
-			options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-			if( diagonals ) {
-				py = y1 + 1;
-				
-				options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-				py = y1 - 2;
-				
-				options = checkStep( options, px, py, x2, y2, start_x, start_y );
-			}
-
-			px = x1;
-			py = y1;
-			
-			py = y1 + 1;
-			
-			options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-			py = y1 - 1;
-			
-			options = checkStep( options, px, py, x2, y2, start_x, start_y );
-
-			nearest = sortArrayDesc( options );
-
-			result = options[ nearest[0] ] || false;
-
-			return result;
-		}
-
-		function sortArrayDesc( options ) {
-			var min = [];
-
-			for( var index in options ) {
-				min.push( index );
-			};
-		    
-		    min.sort(function(a,b){return a-b;});
-			
-			return min;
-		}
-
-		function sortArrayAsc( options ) {
-			var min = [];
-
-			for( var index in options ) {
-				min.push( index );
-			};
-		    
-		    min.sort(function(a,b){return b-a;});
-			
-			return min;
-		}
-
-		function checkStep( options, px, py, x2, y2, origin_x, origin_y ) {
-			if( !isWall( px, py ) ) {
-				to = getDistance( { x:px, y:py }, { x:x2, y:y2 });
-				from = getDistance( { x:px, y:py }, { x:origin_x, y:origin_y });
-				bestpath = to;
-
-				options[ bestpath ] = {
-					x: px, 
-					y: py,
-					d: to,
-					g: from,
-					f: bestpath
-				};
-
-			}
-
-			return options;
-		}
-
-		function isWall( x, y ) {
-		
-			if( walls[x] !== undefined ) {
-				if( walls[x][y] !== undefined ) {
-					if( walls[x][y] == 1 || walls[x][y] == 2 ) {
-						return true;
-					}				
-				}
-			}
-
-			if(pathObj.isTile(x,y)) return true;
-
-			return false;
 		}
 
 		function saveLine( paths, start_x, start_y, last_x, last_y ) {
@@ -555,8 +515,7 @@
 				{
 					inviswall[ path ] = { x: x1, y: i };
 
-					walls[x1] = walls[x1] || [];
-					walls[x1][i] = 1;
+					pathObj.addWall( x1, i );
 
 					path++;
 				}
@@ -575,15 +534,14 @@
 				{
 					inviswall[ path ] = { x: i, y: y1 };
 
-					walls[i] = walls[i] || [];
-					walls[i][y1] = 1;
+					pathObj.addWall( i, y1 );
 
 					path++;
 				}
 			
 			} else {
 
-				console.log( 'Line not given' );
+				console.log( 'Line not given', x1, y1, x2, y2 );
 
 				return false;
 			}
@@ -603,28 +561,16 @@
 					ly = inviswall[ i - 1 ].y; y = inviswall[ i ].y;
 					
 					px = x + 1; py = y;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x - 1; py = y;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x; py = y + 1;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 
 					px = x; py = y - 1;
-					if( !isWall( px, py ) ) {
-						walls[px] = walls[px] || [];
-						walls[px][py] = 2;
-					}
+					if( !pathObj.isWall( px, py ) ) pathObj.addWall( px, py, 2 );
 				}
 
 				path++;

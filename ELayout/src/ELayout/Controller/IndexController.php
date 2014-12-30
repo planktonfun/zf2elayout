@@ -62,9 +62,9 @@ class IndexController extends AbstractActionController
         $this->linked_list['EWa2y'][ microtime() ] = 'Album';
         $this->linked_list['EWa2y'][ microtime() ] = 'Application';
         $this->linked_list['EWa2y'][ microtime() ] = 'ELayout';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWay';
         $this->linked_list['EWa2y'][ microtime() ] = 'EWay1';
         $this->linked_list['EWa2y'][ microtime() ] = 'EWay2';
-        $this->linked_list['EWa2y'][ microtime() ] = 'EWay3';
         $this->linked_list['EWa2y'][ microtime() ] = 'Match';
         $this->linked_list['EWa2y'][ microtime() ] = 'ZendDeveloperTools';
         $this->linked_list['EWa2y'][ microtime() ] = 'ZendDeveloperTools3';
