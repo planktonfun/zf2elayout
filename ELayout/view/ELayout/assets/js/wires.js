@@ -84,6 +84,7 @@
 
 					if( collision_count > 1 ) {
 						this.x1 -= 3;
+						this.y1 -= 3;
 
 						adjusted = true;
 					}
@@ -96,6 +97,7 @@
 
 					if( collision_count > 1 ) {
 						this.x2 -= 3;
+						this.y2 += 3;
 
 						adjusted = true;
 					}
@@ -161,6 +163,8 @@
 			
 			update = checkPossibleDirection( last_x, last_y, x2, y2-40 );
 			makeWalls( update );
+
+			debug = x1 + " " + y1 + " " + x2 + " " + y2;
 
 			// update = checkPossibleDirection( 119, -20, 119, 30, 'lightblue' );
 			// makeWalls( update );

@@ -8,11 +8,16 @@ use Zend\Loader\ModuleAutoloader;
 
 class IndexController extends AbstractActionController
 {
+    protected $test = true;
+
     public function indexAction() 
     {       
             $view = new ViewModel( );
             
-            $module_list = $this->_getAllModules( );
+            if( $this->test )
+                $module_list = $this->_getTestData( );
+            else
+                $module_list = $this->_getAllModules( );
 
             $view->setVariable('module_list', json_encode( $module_list ) );
             $view->setVariable('linked_list', json_encode( $this->linked_list ) );
@@ -24,16 +29,53 @@ class IndexController extends AbstractActionController
 
     public function assetsAction() 
     {
-            $file_name = $this->params( 'filename' );
+        $file_name = $this->params( 'filename' );
 
-            $this->_setHeaderBasedOnFileName( $file_name );
-            
-            $view = new ViewModel();
+        $this->_setHeaderBasedOnFileName( $file_name );
+        
+        $view = new ViewModel();
 
-            $this->_setViewBasedOnFileName( $file_name, $view );
-            $view->setTerminal( true );
- 
-            return $view;
+        $this->_setViewBasedOnFileName( $file_name, $view );
+        $view->setTerminal( true );
+
+        return $view;
+    }
+
+    private function _getTestData( )
+    { 
+        $module_list[] = './module/Album';
+        $module_list[] = './module/Application';
+        $module_list[] = './module/ZF2ELayout/ELayout';
+        $module_list[] = './api/EWay';
+        $module_list[] = './api/EWay1';
+        $module_list[] = './api/EWay2';
+        $module_list[] = './vendor/zendframework/zend-developer-tools/src/ZendDeveloperTools/Match';
+        $module_list[] = './vendor/zendframework/zend-developer-tools/src/ZendDeveloperTools';
+        $module_list[] = './vendor/zendframework/zend-developer-tools/src/ZendDeveloperTools3';
+        $module_list[] = './api2/EWa2y';
+        $module_list[] = './api2/EWa2y1';
+        $module_list[] = './api2/EWa2y2';
+        $module_list[] = './api3/EWa22y';
+        $module_list[] = './api3/EWa12y1';
+        $module_list[] = './api3/EWa12y2';
+
+        $this->linked_list['EWa2y'][ microtime() ] = 'Album';
+        $this->linked_list['EWa2y'][ microtime() ] = 'Application';
+        $this->linked_list['EWa2y'][ microtime() ] = 'ELayout';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWay1';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWay2';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWay3';
+        $this->linked_list['EWa2y'][ microtime() ] = 'Match';
+        $this->linked_list['EWa2y'][ microtime() ] = 'ZendDeveloperTools';
+        $this->linked_list['EWa2y'][ microtime() ] = 'ZendDeveloperTools3';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa2y';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa2y1';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa2y2';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa22y';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa12y1';
+        $this->linked_list['EWa2y'][ microtime() ] = 'EWa12y2';
+
+        return $module_list;
     }
 
     private function _getAllModules( )
