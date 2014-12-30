@@ -25,3 +25,7 @@ Installation:
   - Add "ELayout" Module to your application.config.php
   - Browse the module through "/emap"
   - Enjoy!
+
+What it looks like:
+==========
+![Alt text](/Screenshot.png "Title")
